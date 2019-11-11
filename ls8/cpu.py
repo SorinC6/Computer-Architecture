@@ -18,6 +18,27 @@ class CPU:
             0b10100010: self.mul
         }
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, value, address):
+        self.ram[address] = value
+
+    def hlt(self, operand_a, operand_b):
+        return (0, False)
+
+    def ldi(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+        return (3, True)
+
+    def prn(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+        return (2, True)
+
+    def mul(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+        return (3, True)
+
     def load(self):
         """Load a program into memory."""
 
