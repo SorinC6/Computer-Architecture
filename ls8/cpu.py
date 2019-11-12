@@ -91,4 +91,19 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+
+        while running:
+            ir = self.ram[self.pc]
+
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            try:
+                operation_output = self.commands[ir](operand_a, operand_b)
+                running = operation_output[1]
+                self.pc += operation_output[0]
+
+            except:
+                print(f"Unknown command: {ir}")
+                sys.exit()
