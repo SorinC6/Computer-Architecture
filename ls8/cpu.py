@@ -9,13 +9,29 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.ram = [0] * 256
-        self.reg = [0] * 8
-        self.pc = self.reg[0]
+        self.reg = [0] * 7
+        self.pc = 0
         self.commands = {
             0b00000001: self.hlt,
             0b10000010: self.ldi,
             0b01000111: self.prn,
             0b10100010: self.mul
+        }
+        self.opcodes = {
+            "NOP":  0b00000000,
+            "LDI":  0b10000010,
+            "PRN":  0b01000111,
+            "ADD":  0b10100000,
+            "MUL":  0b10100010,
+            "HLT":  0b00000001,
+            "PUSH": 0b01000101,
+            "POP":  0b01000110,
+            "CALL": 0b01010000,
+            "RET":  0b00010001,
+            "CMP":  0b10100111,
+            "JMP":  0b01010100,
+            "JEQ":  0b01010101,
+            "JNE":  0b01010110,
         }
 
     def ram_read(self, address):
@@ -38,6 +54,34 @@ class CPU:
     def mul(self, operand_a, operand_b):
         self.alu("MUL", operand_a, operand_b)
         return (3, True)
+
+    def push(self):
+        """Run push onto the stack."""
+        # grab the target reg idx
+        reg_idx = self.ram[self.pc+1]
+        # grab the value to be pushed from the reg idx
+        push_val = self.reg[reg_idx]
+        # grab the stack pointer
+        sp = self.reg[7]
+        # push the value onto the stack
+        self.ram[sp] = push_val
+        # decremment the sp by 1
+        self.reg[7] -= 1
+
+    def pop(self):
+        """Run pop off the stack."""
+        # grab the target reg idx
+        reg_idx = self.ram[self.pc+1]
+        # return the sp to the last value in stack
+        self.reg[7] += 1
+        # grab the new stack pointer
+        sp = self.reg[7]
+        # grab the value to be popped from the stack
+        pop_val = self.ram[sp]
+        # set the last stack value to 0
+        self.ram[sp] = 0
+        # add the popped value to the reg idx
+        self.reg[reg_idx] = pop_val
 
     def load(self, program):
         """Load a program into memory."""
@@ -79,6 +123,10 @@ class CPU:
         # elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] = (self.reg[reg_a] * self.reg[reg_b])
+        # if op == "INC":
+        #     self.reg[reg_a] += 1
+        # elif op == "DEC":
+        #     self.reg[reg_a] -= 1
         else:
             raise Exception("Unsupported ALU operation")
 
